@@ -1,0 +1,82 @@
+### Check main endpoint and list available resources
+GET http://localhost:8080/dms/
+Accept: application/json
+
+> {%
+client.test("Request executed successfully", function() {
+  client.assert(response.status === 200, "Response status is not 200");
+});
+%}
+
+### Get non-existing document with random uuid
+GET http://localhost:8080/dms/documents/{{$uuid}}
+Accept: application/json
+
+> {%
+client.test("Resource with random UUID is not found", function() {
+  client.assert(response.status === 404, "Response status is not 404, actual value is " + response.status);
+});
+%}
+
+### Create a document
+POST http://localhost:8080/dms/documents
+Content-Type: application/json
+
+{
+  "ownerId": "user@bank.my",
+  "fileName": "myFile",
+  "fileType": "pdf",
+  "data": "dGVzdCBwZGYgZG9jdW1lbnQ="
+}
+
+> {%
+client.test("Request executed successfully", function() {
+  client.assert(response.status === 201, "Response status is not 201 ('accepted'), actual value is " + response.status);
+});
+
+client.test("'Location' header is set in response", function() {
+  var location = response.headers.valueOf("Location");
+  client.global.set('new_document_location', location);
+
+  var uuidPattern = "[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+  var documentResourcePathPattern = "/dms/documents/" + uuidPattern
+  client.assert(location.search(documentResourcePathPattern) > -1, "Expected location to match 'http://{host}:{port}/dms/documents/{uuid}' pattern but actual value is " + location);
+});
+%}
+
+### Get uploaded document
+GET {{new_document_location}}
+Accept: application/json
+
+> {%
+client.test("Request executed successfully", function() {
+  client.assert(response.status === 200, "Response status is not 200, actual value is " + response.status);
+});
+
+client.test("Response content-type is json", function() {
+  var type = response.contentType.mimeType;
+  client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
+});
+%}
+
+### Delete uploaded document
+DELETE {{new_document_location}}
+#Accept: application/json
+
+> {%
+client.test("Request executed successfully", function() {
+  client.assert(response.status === 204, "Response status is not 204 ('no content'), actual value is " + response.status);
+});
+
+%}
+
+### Try deleting deleted document
+DELETE {{new_document_location}}
+#Accept: application/json
+
+> {%
+client.test("Request executed successfully", function() {
+  client.assert(response.status === 404, "Response status is not 404 ('not found'), actual value is " + response.status);
+});
+
+%}
