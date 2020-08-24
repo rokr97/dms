@@ -2,3 +2,6 @@ spring:
   data:
     rest:
       base-path: /dms
+  h2:
+    console:
+      enabled: true

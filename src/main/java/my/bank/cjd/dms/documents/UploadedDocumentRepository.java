@@ -1,11 +1,8 @@
 package my.bank.cjd.dms.documents;
 
-import org.springframework.data.repository.PagingAndSortingRepository;
-import org.springframework.data.rest.core.annotation.RepositoryRestResource;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-import java.util.List;
-
-@RepositoryRestResource(collectionResourceRel = "documents", path = "documents")
-public interface UploadedDocumentRepository extends PagingAndSortingRepository<UploadedDocument, String> {
-
+//@Repository
+public interface UploadedDocumentRepository extends JpaRepository<UploadedDocument, String> {
 }

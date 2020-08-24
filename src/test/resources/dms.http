@@ -1,13 +1,3 @@
-### Check main endpoint and list available resources
-GET http://localhost:8080/dms/
-Accept: application/json
-
-> {%
-client.test("Request executed successfully", function() {
-  client.assert(response.status === 200, "Response status is not 200");
-});
-%}
-
 ### Get non-existing document with random uuid
 GET http://localhost:8080/dms/documents/{{$uuid}}
 Accept: application/json
@@ -79,4 +69,26 @@ client.test("Request executed successfully", function() {
   client.assert(response.status === 404, "Response status is not 404 ('not found'), actual value is " + response.status);
 });
 
+%}
+
+### Create a document with missing fields
+POST http://localhost:8080/dms/documents
+Content-Type: application/json
+
+{
+  "ownerId": "user@bank.my",
+  "fileName": "myFile",
+  "fileType": null,
+  "data": "dGVzdCBwZGYgZG9jdW1lbnQ="
+}
+
+### Get all documents
+GET http://localhost:8080/dms/documents/
+Accept: application/json
+
+> {%
+client.test("Request executed successfully", function() {
+  client.assert(response.status === 200, "Response status is not 200");
+});
+//TODO: validate entries count
 %}
