@@ -8,20 +8,31 @@ client.test("Resource with random UUID is not found", function() {
 });
 %}
 
-### Create a document
-POST http://localhost:8080/dms/documents
-Content-Type: application/json
 
-{
-  "ownerId": "user@bank.my",
-  "fileName": "myFile",
-  "fileType": "pdf",
-  "data": "dGVzdCBwZGYgZG9jdW1lbnQ="
-}
+### Send a form with the text and file fields
+POST http://localhost:8080/dms/documents/
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="ownerId"
+Content-Type: text/plain
+
+user1@bank.my
+--WebAppBoundary
+Content-Disposition: form-data; name="documentName"
+Content-Type: text/plain
+
+my-pdf-document
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="my.pdf"
+Content-Type: application/sotona
+
+< ./test-pdf-document.pdf
+--WebAppBoundary--
 
 > {%
-client.test("Request executed successfully", function() {
-  client.assert(response.status === 201, "Response status is not 201 ('accepted'), actual value is " + response.status);
+client.test("Document successfully uploaded", function() {
+  client.assert(response.status === 201, "Response status is not 201 ('created'), actual value is " + response.status);
 });
 
 client.test("'Location' header is set in response", function() {
@@ -36,25 +47,24 @@ client.test("'Location' header is set in response", function() {
 
 ### Get uploaded document
 GET {{new_document_location}}
-Accept: application/json
+Accept: application/pdf
 
 > {%
-client.test("Request executed successfully", function() {
+client.test("Document successfully downloaded", function() {
   client.assert(response.status === 200, "Response status is not 200, actual value is " + response.status);
 });
 
 client.test("Response content-type is json", function() {
   var type = response.contentType.mimeType;
-  client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
+  client.assert(type === "application/pdf", "Expected 'application/pdf' but received '" + type + "'");
 });
 %}
 
 ### Delete uploaded document
 DELETE {{new_document_location}}
-#Accept: application/json
 
 > {%
-client.test("Request executed successfully", function() {
+client.test("Document deleted successfully", function() {
   client.assert(response.status === 204, "Response status is not 204 ('no content'), actual value is " + response.status);
 });
 
@@ -62,32 +72,31 @@ client.test("Request executed successfully", function() {
 
 ### Try deleting deleted document
 DELETE {{new_document_location}}
-#Accept: application/json
 
 > {%
-client.test("Request executed successfully", function() {
+client.test("Non-existing document is not deleted", function() {
   client.assert(response.status === 404, "Response status is not 404 ('not found'), actual value is " + response.status);
 });
 
 %}
 
-### Create a document with missing fields
-POST http://localhost:8080/dms/documents
-Content-Type: application/json
-
-{
-  "ownerId": "user@bank.my",
-  "fileName": "myFile",
-  "fileType": null,
-  "data": "dGVzdCBwZGYgZG9jdW1lbnQ="
-}
-
+#### Create a document with missing fields
+#POST http://localhost:8080/dms/documents
+#Content-Type: application/json
+#
+#{
+#  "ownerId": "user@bank.my",
+#  "fileName": "myFile",
+#  "fileType": null,
+#  "data": "dGVzdCBwZGYgZG9jdW1lbnQ="
+#}
+#
 ### Get all documents
 GET http://localhost:8080/dms/documents/
 Accept: application/json
 
 > {%
-client.test("Request executed successfully", function() {
+client.test("'List all documents' executed successfully", function() {
   client.assert(response.status === 200, "Response status is not 200");
 });
 //TODO: validate entries count

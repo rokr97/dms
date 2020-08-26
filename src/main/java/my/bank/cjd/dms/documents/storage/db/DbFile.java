@@ -1,4 +1,4 @@
-package my.bank.cjd.dms.documents;
+package my.bank.cjd.dms.documents.storage.db;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,22 +19,22 @@ import java.util.Objects;
 @Getter
 @Setter
 @Table(name = "uploaded_documents")
-public class UploadedDocument {
+public class DbFile {
     @Id
     @GeneratedValue(generator = "uuid")
     @GenericGenerator(name = "uuid", strategy = "uuid2")
     private String id;
 
+    @Email
+    private String ownerId; // email of a user who uploaded the document
     @NotNull(message = "File name cannot be null")
     private String fileName;
     @NotNull(message = "File type cannot be null")
-    private String fileType;
-    @Email
-    private String ownerId; // email of a user who uploaded the document
+    private String documentName;
     @Lob
-    private byte[] data;
+    private byte[] fileContent;
 
-    public UploadedDocument() {
+    public DbFile() {
 
     }
 
@@ -42,7 +42,7 @@ public class UploadedDocument {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        UploadedDocument that = (UploadedDocument) o;
+        DbFile that = (DbFile) o;
         return Objects.equals(this.id, that.getId());
     }
 
