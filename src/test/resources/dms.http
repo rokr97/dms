@@ -14,7 +14,7 @@ Content-Type: text/plain
 my-pdf-document
 --WebAppBoundary
 Content-Disposition: form-data; name="file"; filename="my.pdf"
-Content-Type: application/sotona
+Content-Type: application/pdf
 
 < ./test-pdf-document.pdf
 --WebAppBoundary--
@@ -125,7 +125,24 @@ client.test("Resource with random UUID is not found", function() {
 });
 %}
 
-### Reject zero-sized document upload
-
 ### Reject non-pdf document upload
+POST http://localhost:8080/dms/documents/
+Content-Type: multipart/form-data; boundary=WebAppBoundary
 
+--WebAppBoundary
+Content-Disposition: form-data; name="ownerId"
+Content-Type: text/plain
+
+zero@bank.my
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="my.txt"
+Content-Type: application/pdf
+
+< ./test-pdf-document.pdf
+--WebAppBoundary--
+
+> {%
+client.test("Unsupported media type is rejected", function() {
+  client.assert(response.status === 415, "Response status is not 415 ('Media type is not supported'), actual value is " + response.status);
+});
+%}
