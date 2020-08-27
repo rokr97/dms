@@ -1,1 +1,3 @@
 rootProject.name = 'dms'
+
+include("documents", "platform")
