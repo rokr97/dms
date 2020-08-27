@@ -5,10 +5,6 @@ plugins {
 dependencies {
     constraints {
         api "org.mapstruct:mapstruct-jdk8:${Deps.mapstruct}"
-        api "org.springdoc:springdoc-openapi-ui:${Deps.spring_doc_open_api}"
-        api "javax.validation:validation-api:${Deps.javax_validation_api}"
-        api "org.hibernate.validator:hibernate-validator:${Deps.hibernate_validator}"
-        api "org.hibernate.validator:hibernate-validator-annotation-processor:${Deps.hibernate_validator}"
         api "org.java_tuples:java_tuples:${Deps.java_tuples}"
     }
 }

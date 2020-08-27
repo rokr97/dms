@@ -10,6 +10,10 @@ dependencies {
     implementation "org.mapstruct:mapstruct-jdk8"
     implementation "org.apache.commons:commons-lang3"
     implementation "javax.validation:validation-api"
+    implementation "org.springdoc:springdoc-openapi-ui:${Deps.spring_doc_open_api}"
+    implementation "javax.validation:validation-api:${Deps.javax_validation_api}"
+    implementation "org.hibernate.validator:hibernate-validator:${Deps.hibernate_validator}"
+    implementation "org.hibernate.validator:hibernate-validator-annotation-processor:${Deps.hibernate_validator}"
 
     annotationProcessor "org.mapstruct:mapstruct-processor:${Deps.mapstruct}"
     annotationProcessor "org.projectlombok:lombok"
