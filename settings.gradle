@@ -1,3 +1,5 @@
 rootProject.name = 'dms'
 
-include("documents", "platform")
+include "platform"
+include "dms-application"
+include "dms-infrastructure"

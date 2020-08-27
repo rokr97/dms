@@ -1,13 +1,39 @@
 plugins {
-    id "java"
+    id "io.spring.dependency-management" version "$spring_dependency_management"
 }
 
-group = "my.bank.cjd"
-version = "0.0.1-SNAPSHOT"
-sourceCompatibility = "11"
+configure (allprojects - project(':platform')) {
+    group = "my.bank.cjd"
+    version = "0.0.1-SNAPSHOT"
 
-allprojects {
+    apply plugin: 'java-library'
+    apply plugin: 'io.spring.dependency-management'
+
     repositories {
         jcenter()
+    }
+
+    dependencyManagement {
+        imports {
+            mavenBom("org.springframework.boot:spring-boot-dependencies:${spring_boot}")
+        }
+    }
+
+    dependencies {
+        implementation platform(project(":platform"))
+        testImplementation("org.springframework.boot:spring-boot-starter-test") {
+            exclude group: "org.junit.vintage", module: "junit-vintage-engine"
+        }
+    }
+
+    configurations {
+        compileOnly {
+            extendsFrom annotationProcessor
+        }
+    }
+
+    compileJava {
+        sourceCompatibility = "11"
+        targetCompatibility = "11"
     }
 }

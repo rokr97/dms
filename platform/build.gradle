@@ -1,12 +1,10 @@
 plugins {
     id "java-platform"
-    id "io.spring.dependency-management" version "1.0.10.RELEASE"
 }
 
 dependencies {
     constraints {
         api "org.mapstruct:mapstruct-jdk8:${Deps.mapstruct}"
-        api "org.springframework.boot:spring-boot-dependencies:${Deps.spring_boot}"
         api "org.springdoc:springdoc-openapi-ui:${Deps.spring_doc_open_api}"
         api "javax.validation:validation-api:${Deps.javax_validation_api}"
         api "org.hibernate.validator:hibernate-validator:${Deps.hibernate_validator}"
