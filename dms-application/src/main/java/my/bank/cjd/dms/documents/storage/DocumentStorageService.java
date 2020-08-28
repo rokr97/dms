@@ -8,6 +8,6 @@ import java.util.Optional;
 public interface DocumentStorageService {
     List<UploadedDocument> listAll();
     DbFile storeFile(UploadDocumentCommand document);
-    Optional<DbFile> getById(String documentId);
+    DbFile getById(String documentId);
     void delete(String documentId);
 }

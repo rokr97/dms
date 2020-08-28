@@ -1,9 +1,11 @@
 package my.bank.cjd.dms.documents.storage;
 
 import lombok.AllArgsConstructor;
+import my.bank.cjd.dms.documents.service.DocumentNotFoundException;
 import my.bank.cjd.dms.documents.storage.db.DbFile;
 import my.bank.cjd.dms.documents.storage.db.DbFileRepository;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 import org.springframework.stereotype.Service;
 
@@ -29,12 +31,16 @@ class InMemoryDocumentStore implements DocumentStorageService {
     }
 
     @Override
-    public Optional<DbFile> getById(String documentId) {
-        return documentsRepo.findById(documentId);
+    public DbFile getById(String documentId) {
+        return documentsRepo.findById(documentId)
+                            .orElseThrow(DocumentNotFoundException::new);
     }
 
     @Override
     public void delete(String documentId) {
+        if (!documentsRepo.existsById(documentId)) {
+            throw new DocumentNotFoundException("Document not found by id = " + documentId);
+        }
         documentsRepo.deleteById(documentId);
     }
 
@@ -44,6 +50,7 @@ class InMemoryDocumentStore implements DocumentStorageService {
     interface DbFileMapper {
         DbFileMapper INSTANCE = Mappers.getMapper(DbFileMapper.class);
 
+        @Mapping(target = "id", ignore = true)
         DbFile uploadCommandToDbFile(UploadDocumentCommand command);
         UploadedDocument dbFileToUploadedDocument(DbFile dbFile);
     }

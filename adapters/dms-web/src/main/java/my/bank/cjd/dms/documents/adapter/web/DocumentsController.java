@@ -1,11 +1,11 @@
-package my.bank.cjd.dms.documents.integration.rest;
+package my.bank.cjd.dms.documents.adapter.web;
 
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import my.bank.cjd.dms.documents.storage.DocumentStorageService;
 import my.bank.cjd.dms.documents.storage.UploadDocumentCommand;
 import my.bank.cjd.dms.documents.storage.UploadedDocument;
 import my.bank.cjd.dms.documents.storage.db.DbFile;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -29,7 +29,7 @@ import java.net.URLConnection;
 import java.util.Collections;
 import java.util.List;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 @RestController()
 @RequestMapping("/dms/documents")
 class DocumentsController {
@@ -39,34 +39,34 @@ class DocumentsController {
     }
 
     @PostMapping(path = "/", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-     ResponseEntity<Void> uploadPdf(
+    ResponseEntity<Void> uploadPdf(
             @RequestParam("ownerId") String ownerId,
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "documentName", required = false) String providedDocumentName) throws HttpMediaTypeNotSupportedException {
         PdfFile pdfFile = PdfFile.fromMultipartFile(file);
-        String documentName = StringUtils.isNotBlank(providedDocumentName) ? providedDocumentName : pdfFile.name;
+        String documentName = isNotBlank(providedDocumentName) ? providedDocumentName : pdfFile.name;
         DbFile dbFile = storage.storeFile(
                 UploadDocumentCommand.builder()
-                    .fileName(pdfFile.name)
-                    .documentName(documentName)
-                    .ownerId(ownerId)
-                    .fileContent(pdfFile.content)
-                    .build()
+                        .fileName(pdfFile.name)
+                        .documentName(documentName)
+                        .ownerId(ownerId)
+                        .fileContent(pdfFile.content)
+                        .build()
         );
 
         URI fileDownloadUri = ServletUriComponentsBuilder.fromCurrentRequest()
-                                .path("/{id}")
-                                .buildAndExpand(dbFile.getId())
-                                .toUri();
+                .path("/{id}")
+                .buildAndExpand(dbFile.getId())
+                .toUri();
 
         return ResponseEntity.created(fileDownloadUri).build();
     }
 
     @GetMapping("/{documentId}")
     ResponseEntity<Resource> downloadFile(@PathVariable String documentId) {
-        return storage.getById(documentId)
-                .map(DocumentsController::toFileDownloadResponse)
-                .orElseGet(() -> ResponseEntity.notFound().build() );
+        return toFileDownloadResponse(storage.getById(documentId));
+//                .map(DocumentsController::toFileDownloadResponse)
+//                .orElseGet(() -> ResponseEntity.notFound().build() );
     }
 
     @DeleteMapping("/{documentId}")
@@ -116,7 +116,30 @@ class DocumentsController {
         }
     }
 
+    public static boolean isNotBlank(final CharSequence cs) {
+        return !isBlank(cs);
+    }
+
+    public static boolean isBlank(final CharSequence cs) {
+        final int strLen = length(cs);
+        if (strLen == 0) {
+            return true;
+        }
+        for (int i = 0; i < strLen; i++) {
+            if (!Character.isWhitespace(cs.charAt(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static int length(final CharSequence cs) {
+        return cs == null ? 0 : cs.length();
+    }
+
     private final DocumentStorageService storage;
     private static final FileNameMap fileNameMap = URLConnection.getFileNameMap();
     private static final List<MediaType> supportedFileTypes = Collections.singletonList(MediaType.APPLICATION_PDF);
 }
+
+

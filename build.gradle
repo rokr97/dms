@@ -36,4 +36,8 @@ configure (allprojects - project(':platform')) {
         sourceCompatibility = "11"
         targetCompatibility = "11"
     }
+
+    test {
+        useJUnitPlatform()
+    }
 }

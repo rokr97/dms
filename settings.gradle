@@ -3,3 +3,4 @@ rootProject.name = 'dms'
 include "platform"
 include "dms-application"
 include "dms-infrastructure"
+include "adapters:dms-web"

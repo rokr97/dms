@@ -1,4 +1,4 @@
-package my.bank.cjd.dms.global.rest.settings;
+package my.bank.cjd.dms.documents.adapter.web.settings;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpStatus;
@@ -9,6 +9,7 @@ import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
+@SuppressWarnings("NullableProblems")
 @ControllerAdvice
 public class NoContentControllerAdvice implements ResponseBodyAdvice<Void> {
     @Override
