@@ -6,7 +6,7 @@ Content-Type: multipart/form-data; boundary=WebAppBoundary
 Content-Disposition: form-data; name="ownerId"
 Content-Type: text/plain
 
-user1@bank.my
+user1@my.bank
 --WebAppBoundary
 Content-Disposition: form-data; name="documentName"
 Content-Type: text/plain
@@ -43,7 +43,7 @@ client.test("Document successfully downloaded", function() {
   client.assert(response.status === 200, "Response status is not 200, actual value is " + response.status);
 });
 
-client.test("Response content-type is json", function() {
+client.test("Response content-type is pdf", function() {
   var type = response.contentType.mimeType;
   client.assert(type === "application/pdf", "Expected 'application/pdf' but received '" + type + "'");
 });
@@ -57,7 +57,7 @@ Content-Type: multipart/form-data; boundary=WebAppBoundary
 Content-Disposition: form-data; name="ownerId"
 Content-Type: text/plain
 
-user1@bank.my
+some_user@my.bank
 --WebAppBoundary
 Content-Disposition: form-data; name="file"; filename="second.pdf"
 Content-Type: application/sotona
@@ -133,7 +133,7 @@ Content-Type: multipart/form-data; boundary=WebAppBoundary
 Content-Disposition: form-data; name="ownerId"
 Content-Type: text/plain
 
-zero@bank.my
+zero@my.bank
 --WebAppBoundary
 Content-Disposition: form-data; name="file"; filename="my.txt"
 Content-Type: application/pdf
