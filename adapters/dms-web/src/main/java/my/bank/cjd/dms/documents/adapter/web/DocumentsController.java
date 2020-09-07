@@ -1,11 +1,9 @@
 package my.bank.cjd.dms.documents.adapter.web;
 
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import my.bank.cjd.dms.documents.service.PdfFile;
 import my.bank.cjd.dms.documents.storage.DocumentStorageService;
-import my.bank.cjd.dms.documents.storage.UploadDocumentCommand;
 import my.bank.cjd.dms.documents.storage.UploadedDocument;
-import my.bank.cjd.dms.documents.storage.db.DbFile;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -22,12 +20,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.io.IOException;
-import java.net.FileNameMap;
 import java.net.URI;
-import java.net.URLConnection;
-import java.util.Collections;
 import java.util.List;
+
+import static my.bank.cjd.dms.documents.adapter.web.UploadDocumentProperties.fileNameMap;
 
 @RequiredArgsConstructor
 @RestController()
@@ -43,20 +39,19 @@ class DocumentsController {
             @RequestParam("ownerId") String ownerId,
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "documentName", required = false) String providedDocumentName) throws HttpMediaTypeNotSupportedException {
-        PdfFile pdfFile = PdfFile.fromMultipartFile(file);
-        String documentName = isNotBlank(providedDocumentName) ? providedDocumentName : pdfFile.name;
-        DbFile dbFile = storage.storeFile(
-                UploadDocumentCommand.builder()
-                        .fileName(pdfFile.name)
-                        .documentName(documentName)
+
+        UploadedDocument newDocument = storage.storeFile(
+                UploadDocumentRequest.builder()
+                        .providedDocumentName(providedDocumentName)
                         .ownerId(ownerId)
-                        .fileContent(pdfFile.content)
+                        .file(file)
                         .build()
+                        .toUploadDocumentCommand()
         );
 
         URI fileDownloadUri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
-                .buildAndExpand(dbFile.getId())
+                .buildAndExpand(newDocument.getId())
                 .toUri();
 
         return ResponseEntity.created(fileDownloadUri).build();
@@ -65,8 +60,6 @@ class DocumentsController {
     @GetMapping("/{documentId}")
     ResponseEntity<Resource> downloadFile(@PathVariable String documentId) {
         return toFileDownloadResponse(storage.getById(documentId));
-//                .map(DocumentsController::toFileDownloadResponse)
-//                .orElseGet(() -> ResponseEntity.notFound().build() );
     }
 
     @DeleteMapping("/{documentId}")
@@ -74,72 +67,16 @@ class DocumentsController {
         storage.delete(documentId);
     }
 
-    private static String normalizeFileName(String originalFileName) {
-        return org.springframework.util.StringUtils.cleanPath(originalFileName);
-    }
-
-    private static ResponseEntity<Resource> toFileDownloadResponse(DbFile dbFile) {
-        String contentTypeFromFilename = fileNameMap.getContentTypeFor(dbFile.getFileName());
+    //todo: extract to a mapper/adapter class
+    static ResponseEntity<Resource> toFileDownloadResponse(PdfFile file) {
+        String contentTypeFromFilename = fileNameMap.getContentTypeFor(file.getName());
         return ResponseEntity.ok()
                 .contentType(MediaType.valueOf(contentTypeFromFilename))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + dbFile.getFileName() + "\"")
-                .body(new ByteArrayResource(dbFile.getFileContent()));
-    }
-
-    @AllArgsConstructor
-    static class PdfFile {
-        String name;
-        byte[] content;
-
-        static PdfFile fromMultipartFile(MultipartFile file) throws HttpMediaTypeNotSupportedException {
-            byte[] fileContent;
-            try {
-                fileContent = file.getBytes();
-            } catch (IOException e) {
-                throw new IllegalArgumentException("Unable to read document content", e); //todo: improve error handling
-            }
-            String fileName = normalizeFileName(file.getOriginalFilename());
-            String contentType = fileNameMap.getContentTypeFor(fileName);
-
-            validate(fileName, contentType);
-
-            return new PdfFile(fileName, fileContent);
-        }
-
-        private static void validate(String fileName, String contentTypeValue) throws HttpMediaTypeNotSupportedException {
-            if (!MediaType.APPLICATION_PDF_VALUE.equals(contentTypeValue)) {
-                MediaType contentType = contentTypeValue != null ? MediaType.valueOf(contentTypeValue) : null;
-                throw contentType == null ?
-                        new HttpMediaTypeNotSupportedException(null, supportedFileTypes, "Unable to parse content type from filename: " + fileName) :
-                        new HttpMediaTypeNotSupportedException(contentType, supportedFileTypes);
-            }
-        }
-    }
-
-    public static boolean isNotBlank(final CharSequence cs) {
-        return !isBlank(cs);
-    }
-
-    public static boolean isBlank(final CharSequence cs) {
-        final int strLen = length(cs);
-        if (strLen == 0) {
-            return true;
-        }
-        for (int i = 0; i < strLen; i++) {
-            if (!Character.isWhitespace(cs.charAt(i))) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    public static int length(final CharSequence cs) {
-        return cs == null ? 0 : cs.length();
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getName() + "\"")
+                .body(new ByteArrayResource(file.getContent()));
     }
 
     private final DocumentStorageService storage;
-    private static final FileNameMap fileNameMap = URLConnection.getFileNameMap();
-    private static final List<MediaType> supportedFileTypes = Collections.singletonList(MediaType.APPLICATION_PDF);
 }
 
 

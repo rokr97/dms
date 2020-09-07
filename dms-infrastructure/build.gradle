@@ -5,10 +5,14 @@ plugins {
 dependencies {
     implementation project(':dms-application')
     implementation project(':adapters:dms-web')
+    implementation project(':adapters:dms-persistence')
     implementation 'org.springframework.boot:spring-boot-starter'
+    implementation "org.springdoc:springdoc-openapi-ui:${Deps.spring_doc_open_api}"
 
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
     developmentOnly "org.springframework.boot:spring-boot-devtools"
     developmentOnly "org.springframework.boot:spring-boot-starter-actuator"
+
+    runtimeOnly "com.h2database:h2"
 }

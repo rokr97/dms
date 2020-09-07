@@ -1,0 +1,13 @@
+dependencies {
+    implementation project(':dms-application')
+    implementation "org.springframework.boot:spring-boot-starter-data-jpa"
+    implementation "javax.validation:validation-api"
+    implementation "javax.validation:validation-api:${Deps.javax_validation_api}"
+    implementation "org.mapstruct:mapstruct-jdk8"
+    implementation "org.hibernate.validator:hibernate-validator:${Deps.hibernate_validator}"
+    implementation "org.hibernate.validator:hibernate-validator-annotation-processor:${Deps.hibernate_validator}"
+
+    annotationProcessor "org.mapstruct:mapstruct-processor:${Deps.mapstruct}"
+    annotationProcessor "org.projectlombok:lombok"
+    compileOnly "org.projectlombok:lombok"
+}

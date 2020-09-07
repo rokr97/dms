@@ -2,6 +2,7 @@ package my.bank.cjd.dms.documents.storage;
 
 import lombok.AllArgsConstructor;
 import my.bank.cjd.dms.documents.service.DocumentNotFoundException;
+import my.bank.cjd.dms.documents.service.PdfFile;
 import my.bank.cjd.dms.documents.storage.db.DbFile;
 import my.bank.cjd.dms.documents.storage.db.DbFileRepository;
 import org.mapstruct.Mapper;
@@ -10,7 +11,6 @@ import org.mapstruct.factory.Mappers;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
 
@@ -26,13 +26,14 @@ class InMemoryDocumentStore implements DocumentStorageService {
     }
 
     @Override
-    public DbFile storeFile(UploadDocumentCommand command) {
-        return documentsRepo.save(DbFileMapper.INSTANCE.uploadCommandToDbFile(command));
+    public UploadedDocument storeFile(UploadDocumentCommand command) {
+        DbFile newFile = documentsRepo.save(DbFileMapper.INSTANCE.uploadCommandToDbFile(command));
+        return DbFileMapper.INSTANCE.dbFileToUploadedDocument(newFile);
     }
 
     @Override
-    public DbFile getById(String documentId) {
-        return documentsRepo.findById(documentId)
+    public PdfFile getById(String documentId) {
+        return documentsRepo.findById(documentId).map(DbFileMapper.INSTANCE::dbFileToPdfFile)
                             .orElseThrow(DocumentNotFoundException::new);
     }
 
@@ -53,5 +54,8 @@ class InMemoryDocumentStore implements DocumentStorageService {
         @Mapping(target = "id", ignore = true)
         DbFile uploadCommandToDbFile(UploadDocumentCommand command);
         UploadedDocument dbFileToUploadedDocument(DbFile dbFile);
+        @Mapping(source = "fileName", target = "name")
+        @Mapping(source = "fileContent", target = "content")
+        PdfFile dbFileToPdfFile(DbFile dbFile);
     }
 }
